@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """Motor del Boletín OE — usa el FINAL de cada área como plantilla (idéntico).
-Solo la TABLA DE PROYECTOS se llena desde el Sheet; directorio, fotos, imágenes
-y diseño quedan 'baked' en cada template_{area}.html (se editan en el código).
+La TABLA DE PROYECTOS se llena desde la hoja de respuestas; el DIRECTORIO se llena
+desde la pestaña 'Directorio' del Sheet (nombre, rol, correo, foto). Lo demás queda
+'baked' en cada template_{area}.html.
 CLI:  python engine.py sample/datos_ejemplo.xlsx salida/
 """
 import sys, os, re, unicodedata
@@ -9,7 +10,7 @@ import pandas as pd
 
 PILL={"on track":("#f0fdf4","#16a34a"),"en proceso":("#fffbeb","#d97706"),
       "planeado":("#eff6ff","#111111"),"en riesgo":("#fef2f2","#dc2626"),"discovery":("#f1f5f9","#64748b")}
-# Área -> (plantilla, generador de filas). Quality no tiene tabla (None) -> baked.
+# Área -> plantilla. Quality no tiene tabla de proyectos (baked).
 AREA_TPL={"first mile":"template_fm.html","service center":"template_svc.html","quality":"template_quality.html"}
 
 def _norm(s):
@@ -52,12 +53,16 @@ def _svc_rows(proys):
 
 ROWGEN={"first mile":_fm_rows,"service center":_svc_rows}
 
-def _load(path):
+def _book(path):
     xls=pd.read_excel(path,sheet_name=None,dtype=str)
-    data={_norm(n):df.fillna("") for n,df in xls.items()}
+    return {_norm(n):df.fillna("") for n,df in xls.items()}
+
+def _pick_resp(book):
     for k in ("respuestas","form responses 1","respuestas de formulario 1","hoja1","proyectos"):
-        if k in data: return data[k]
-    return list(data.values())[0]
+        if k in book: return book[k]
+    for k in book:
+        if k.startswith("respuestas"): return book[k]
+    return list(book.values())[0]
 
 def _proys(resp, area, mes):
     cA=find_col(resp,"area"); cM=find_col(resp,"mes"); cP=find_col(resp,"proyecto")
@@ -73,8 +78,35 @@ def _proys(resp, area, mes):
             "contexto":g(r,"contexto"),"stopper":g(r,"stopper"),"siguiente":g(r,"siguiente"),"enlace":g(r,"enlace")})
     return out
 
+def _dir_list(dirdf, area):
+    """Contactos del directorio para un área (ordenados por Nivel)."""
+    if dirdf is None or getattr(dirdf,"empty",True): return []
+    cN=find_col(dirdf,"nombre"); cR=find_col(dirdf,"rol"); cC=find_col(dirdf,"correo")
+    cNi=find_col(dirdf,"nivel"); cF=find_col(dirdf,"foto"); cA=find_col(dirdf,"area")
+    key=_norm(area); out=[]
+    for _,r in dirdf.iterrows():
+        nm=_s(r[cN]) if cN is not None else ""
+        if not nm: continue
+        ar=_norm(r[cA]) if cA is not None else "todos"
+        if ar not in ("todos","") and ar!=key: continue
+        out.append({"nombre":nm,
+                    "rol":_s(r[cR]) if cR is not None else "",
+                    "correo":_s(r[cC]) if cC is not None else "",
+                    "foto":_s(r[cF]) if cF is not None else "",
+                    "nivel":_s(r[cNi]) if cNi is not None else "3"})
+    out.sort(key=lambda d:(int(d["nivel"]) if d["nivel"].isdigit() else 9))  # sort estable
+    return out
+
+def _fill_dir(tpl, dl):
+    for k,d in enumerate(dl):
+        tpl=tpl.replace("@@D%d_FOTO@@"%k,d["foto"]).replace("@@D%d_NOMBRE@@"%k,d["nombre"])
+        tpl=tpl.replace("@@D%d_ROL@@"%k,d["rol"]).replace("@@D%d_EMAIL@@"%k,d["correo"])
+    return tpl
+
 def generate(path, mes=None, template_dir="."):
-    resp=_load(path)
+    book=_book(path)
+    resp=_pick_resp(book)
+    dirdf=book.get("directorio")
     cA=find_col(resp,"area"); cM=find_col(resp,"mes")
     if mes is None and cM is not None:
         vals=[v for v in resp[cM].map(_s) if v]; mes=max(set(vals),key=vals.count) if vals else ""
@@ -89,6 +121,9 @@ def generate(path, mes=None, template_dir="."):
         tpl=open(os.path.join(template_dir,tf),encoding="utf-8").read()
         if key in ROWGEN and "@@PROYECTOS@@" in tpl:
             tpl=tpl.replace("@@PROYECTOS@@", ROWGEN[key](_proys(resp,area,mes)))
+        if "@@D0_NOMBRE@@" in tpl:
+            tpl=_fill_dir(tpl,_dir_list(dirdf,area))
+            tpl=re.sub(r"@@D\d+_[A-Z]+@@","",tpl)   # limpia slots sin datos
         out[area]=tpl.encode("ascii","xmlcharrefreplace").decode("ascii")
     return out, mes
 

@@ -96,13 +96,13 @@ function crearFormYSheet() {
   var dir = ss.insertSheet('Directorio');
   dir.appendRow(['Nombre','Rol','Correo','Nivel','FotoURL','Área']);
   var DIREC = [
-    ['Miguel Hernández','Sr Manager OE','miguel.hernandezmartinez@mercadolibre.com.mx',1,'','Todos'],
-    ['Steven Seedorf','Manager OTR','steven.seedorf@mercadolibre.com.mx',2,'','Todos'],
-    ['Mariana Novoa','Manager UTR','mariana.novoa@mercadolibre.com.mx',2,'','Todos'],
-    ['Ana Vargas','Supervisor SVC','ana.vargasfuentes@mercadolibre.com.mx',3,'','Todos'],
-    ['Juan Carlos García','Supervisor Quality','garcia.gjuan@mercadolibre.com.mx',3,'','Todos'],
-    ['Eduardo García','Supervisor OE','eduardo.garcia@mercadolibre.com.mx',3,'','Todos'],
-    ['Ricardo Almanza','Supervisor LH y FM','carlosricardo.almanzaloo@mercadolibre.com.mx',3,'','Todos']
+    ['Miguel Hernández','Sr Manager OE','miguel.hernandezmartinez@mercadolibre.com.mx',1,'https://i.imgur.com/fA8JHId.jpg','Todos'],
+    ['Steven Seedorf','Manager OTR','steven.seedorf@mercadolibre.com.mx',2,'https://i.imgur.com/UcM3gqc.jpg','Todos'],
+    ['Mariana Novoa','Manager UTR','mariana.novoa@mercadolibre.com.mx',2,'https://i.imgur.com/i3epbGL.jpg','Todos'],
+    ['Ana Vargas','Supervisor SVC','ana.vargasfuentes@mercadolibre.com.mx',3,'https://i.imgur.com/MH4N1CU.jpg','Todos'],
+    ['Juan Carlos García','Supervisor Quality','garcia.gjuan@mercadolibre.com.mx',3,'https://i.imgur.com/NHcV4RN.jpg','Todos'],
+    ['Eduardo García','Supervisor OE','eduardo.garcia@mercadolibre.com.mx',3,'https://i.imgur.com/f6C6n8t.jpg','Todos'],
+    ['Ricardo Almanza','Supervisor LH y FM','carlosricardo.almanzaloo@mercadolibre.com.mx',3,'https://i.imgur.com/nE4Yfj6.jpg','Todos']
   ];
   DIREC.forEach(function(r){ dir.appendRow(r); });
 

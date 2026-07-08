@@ -25,8 +25,10 @@ Google Form -> Google Sheet (Respuestas) -> engine.py rellena la tabla -> 3 HTML
 ## Entrada (Sheet "Respuestas")
 1 fila por proyecto: `Área, Mes, Responsable, Proyecto, % Avance, Estado, Contexto, Stopper, Siguiente, Enlace`.
 
-## Cambiar fotos del equipo / imágenes
-Se editan **directo en el archivo `template_<área>.html`** (busca el `<img src=...>` y cambia la URL). No pasan por el Form.
+## Cambiar contactos / fotos del directorio
+- **First Mile:** el directorio (nombre, rol, correo, foto) sale de la pestaña **`Directorio`** del Sheet. Editas esa pestaña y el boletín cambia — sin tocar código.
+- **SVC y Quality:** por ahora siguen 'baked' en su `template_<área>.html` (se migran igual que FM en el siguiente paso).
+- Gráficas/capturas: llegan por el Form (pendiente de cablear).
 
 ## Correr localmente
 ```bash
